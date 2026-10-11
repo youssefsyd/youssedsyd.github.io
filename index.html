@@ -159,6 +159,7 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
   .days button{padding:7px 0 6px}
 }
 .lang{margin-inline-start:auto}
+.bar .seg:last-child{margin-inline-start:auto}
 .lang button{padding:6px 14px}
 .dayhead .sub{font-size:18px;font-weight:700;color:var(--muted)}
 .ico-btn{display:flex;align-items:center;padding:6px 11px!important}
@@ -246,10 +247,6 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
     <div class="seg" role="group" aria-label="View">
       <button id="vDay" aria-pressed="true"></button>
       <button id="vWeek" aria-pressed="false"></button>
-    </div>
-    <div class="seg lang" role="group" aria-label="Language">
-      <button id="lEn" aria-pressed="true">EN</button>
-      <button id="lAr" aria-pressed="false" lang="ar">عربي</button>
     </div>
     <div class="seg"><button id="mnu" class="ico-btn" type="button" aria-haspopup="dialog"></button></div>
   </div>
@@ -466,8 +463,6 @@ function setLang(l){
   try{localStorage.setItem("tt-lang",l)}catch(e){}
   const de=document.documentElement;
   de.lang=l;de.dir=l==="ar"?"rtl":"ltr";
-  $("lEn").setAttribute("aria-pressed",l==="en");
-  $("lAr").setAttribute("aria-pressed",l==="ar");
   document.title=L().title;
   $("ttl").textContent=L().title;
   $("m1").textContent=L().level;$("m2").textContent=L().program;$("m3").textContent=L().advisor;
@@ -519,8 +514,6 @@ function openSheet(){screen="main";$("ov").hidden=false;document.body.style.over
 function closeSheet(){$("ov").hidden=true;document.body.style.overflow=""}
 $("vDay").onclick=()=>setView("day");
 $("vWeek").onclick=()=>setView("week");
-$("lEn").onclick=()=>setLang("en");
-$("lAr").onclick=()=>setLang("ar");
 $("mnu").innerHTML=MENU;
 $("mnu").onclick=openSheet;
 $("ov").addEventListener("click",e=>{if(e.target===$("ov"))closeSheet()});
