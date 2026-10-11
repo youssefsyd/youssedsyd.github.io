@@ -280,7 +280,7 @@ const T={
     foot:"English names are my translations and transliterations of the Arabic originals. Check them against your official schedule.",
     Lecture:"Lecture",Class:"Class",Lab:"Lab",h:"h",m:"m",
     menu:"Menu",nextCard:"Next-class card",dark:"Dark mode",abs:"Absences",absHint:"Tap + each time you miss a class.",
-    exp:"Export as image",reset:"Reset all",resetQ:"Reset all absence counts to 0?",back:"Back",close:"Close",
+    language:"Language",exp:"Export as image",reset:"Reset all",resetQ:"Reset all absence counts to 0?",back:"Back",close:"Close",
     save:"Save image",share:"Share",making:"Making your image…",expHint:"You can also press and hold the image to save it.",
     inL:t=>"in "+t,endsL:t=>"ends in "+t},
   ar:{title:"الجدول الأسبوعي",level:"المستوى: Junior",program:"الهندسة الطبية والحيوية · برنامج 2020",
@@ -288,7 +288,7 @@ const T={
     free:"فراغ",prof:"الأستاذ",empty:"لا توجد محاضرات. استمتع بيوم الراحة.",hint:"مرّر جانبًا لرؤية كل الأيام.",foot:"",
     Lecture:"محاضرة",Class:"فصل",Lab:"معمل",h:"س",m:"د",
     menu:"القائمة",nextCard:"بطاقة الحصة القادمة",dark:"الوضع الداكن",abs:"الغياب",absHint:"اضغط + كلما غبت عن حصة.",
-    exp:"تصدير كصورة",reset:"تصفير الكل",resetQ:"تصفير كل عدّادات الغياب؟",back:"رجوع",close:"إغلاق",
+    language:"اللغة",exp:"تصدير كصورة",reset:"تصفير الكل",resetQ:"تصفير كل عدّادات الغياب؟",back:"رجوع",close:"إغلاق",
     save:"حفظ الصورة",share:"مشاركة",making:"جارٍ تجهيز الصورة…",expHint:"يمكنك أيضًا الضغط مطولًا على الصورة لحفظها.",
     inL:t=>"بعد "+t,endsL:t=>"تنتهي بعد "+t}
 };
@@ -449,7 +449,7 @@ function renderNext(){
   w.innerHTML=`<button type="button" class="next c ${KIND[x.k]}">
     <div class="lbl"><span>${live?L().now:L().next}</span><span>${when}</span></div>
     <div class="t"><span class="code">${x.c}</span> ${c[lang]}</div>
-    <div class="s">${tn(x)} · ${fmt(x.s)}–${fmt(x.e)} · ${x.room[lang]}</div></button>`;
+    <div class="s">${tn(x)} · <bdi dir="ltr">${fmt(x.s)}–${fmt(x.e)}</bdi> · ${x.room[lang]}</div></button>`;
   w.firstChild.onclick=()=>{sel=di;setView("day");renderDays();renderDay()};
 }
 
@@ -498,6 +498,7 @@ function renderSheet(){
     h=head(L().menu,false)+
       `<div class="item"><span>${L().nextCard}</span>${sw("next",showNext)}</div>
        <div class="item"><span>${L().dark}</span>${sw("dark",theme==="dark")}</div>
+       <div class="item"><span>${L().language}</span><span class="seg" role="group"><button type="button" data-a="lang" data-c="en" aria-pressed="${lang==="en"}">EN</button><button type="button" data-a="lang" data-c="ar" lang="ar" aria-pressed="${lang==="ar"}">عربي</button></span></div>
        <button type="button" class="item btn" data-a="abs"><span>${L().abs}</span>${CHEV}</button>
        <button type="button" class="item btn" data-a="exp"><span>${L().exp}</span>${CHEV}</button>`;
   }else if(screen==="abs"){
@@ -516,6 +517,10 @@ function renderSheet(){
 }
 function openSheet(){screen="main";$("ov").hidden=false;document.body.style.overflow="hidden";renderSheet()}
 function closeSheet(){$("ov").hidden=true;document.body.style.overflow=""}
+$("vDay").onclick=()=>setView("day");
+$("vWeek").onclick=()=>setView("week");
+$("lEn").onclick=()=>setLang("en");
+$("lAr").onclick=()=>setLang("ar");
 $("mnu").innerHTML=MENU;
 $("mnu").onclick=openSheet;
 $("ov").addEventListener("click",e=>{if(e.target===$("ov"))closeSheet()});
@@ -527,6 +532,7 @@ $("sheet").addEventListener("click",e=>{
   else if(a==="back"){screen="main";renderSheet()}
   else if(a==="next"){setNext(!showNext);renderSheet()}
   else if(a==="dark"){setTheme(theme==="dark"?"light":"dark");renderSheet()}
+  else if(a==="lang"){setLang(c);renderSheet()}
   else if(a==="abs"){screen="abs";renderSheet()}
   else if(a==="inc"){abs[c]=(abs[c]||0)+1;saveAbs();renderSheet()}
   else if(a==="dec"){abs[c]=Math.max(0,(abs[c]||0)-1);saveAbs();renderSheet()}
