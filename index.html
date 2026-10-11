@@ -197,13 +197,48 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
   .legend span{font-size:12px}
   .foot{font-size:11.5px;margin-top:12px}
 }
+
+/* ---- v5 additions ---- */
+.axis,.col{height:calc(500px * var(--px))}
+.col{background-image:repeating-linear-gradient(to bottom,transparent 0,transparent calc(50px * var(--px) - 1px),var(--line) calc(50px * var(--px) - 1px),var(--line) calc(50px * var(--px)))}
+.next{display:block;width:100%;text-align:start;font:inherit;color:var(--ink);cursor:pointer;border:0;margin:0 0 12px;padding:9px 12px 10px;border-radius:14px;background:var(--tint);border-inline-start:6px solid var(--tone)}
+.next .lbl{display:flex;justify-content:space-between;gap:10px;font-size:12px;font-weight:700;color:var(--tone);text-transform:uppercase;letter-spacing:.04em}
+.next .t{font-weight:800;font-size:16px;line-height:1.3;margin-top:2px}
+.next .s{font-size:12.5px;color:var(--muted);margin-top:1px;font-weight:600}
+.overlay{position:fixed;inset:0;z-index:50;background:rgba(10,14,24,.5);display:flex;align-items:flex-end;justify-content:center}
+.sheet{width:100%;max-width:520px;max-height:88vh;overflow:auto;background:var(--surface);color:var(--ink);border-radius:22px 22px 0 0;padding:14px 16px calc(18px + env(safe-area-inset-bottom,0px))}
+.sh-h{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.sh-h h2{margin:0;flex:1;font-family:"Sora","Cairo",sans-serif;font-size:19px}
+.rb{width:36px;height:36px;border-radius:50%;border:0;background:var(--bg);color:var(--ink);display:grid;place-items:center;cursor:pointer;padding:0}
+.rb svg,.item.btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+[dir="rtl"] .rb svg,[dir="rtl"] .item.btn svg{transform:scaleX(-1)}
+.item{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:13px 2px;border:0;border-top:1px solid var(--line);background:none;color:var(--ink);font:inherit;font-weight:600;font-size:15.5px;text-align:start}
+.item.btn{cursor:pointer}
+.sw{width:46px;height:28px;border-radius:999px;border:0;background:var(--line);position:relative;cursor:pointer;padding:0;flex:none}
+.sw i{position:absolute;top:3px;inset-inline-start:3px;width:22px;height:22px;border-radius:50%;background:var(--surface);box-shadow:0 1px 3px rgba(0,0,0,.25);transition:inset-inline-start .15s}
+.sw[aria-checked="true"]{background:var(--accent)}
+.sw[aria-checked="true"] i{inset-inline-start:21px}
+.muted{color:var(--muted);font-size:13.5px;margin:4px 2px 10px}
+.cn{display:flex;flex-direction:column;gap:0;min-width:0}
+.cn b{font-size:13px}
+.cn span{font-weight:700;font-size:15px}
+.ctr{display:flex;align-items:center;gap:10px;flex:none}
+.ctr button{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-size:20px;font-weight:700;cursor:pointer;line-height:1;padding:0}
+.ctr output{min-width:22px;text-align:center;font-family:"Sora",sans-serif;font-weight:700;font-size:17px}
+.link{display:block;margin:12px auto 0;background:none;border:0;color:var(--muted);font:inherit;font-weight:700;font-size:14px;text-decoration:underline;cursor:pointer}
+.prev{display:block;width:100%;max-height:52vh;object-fit:contain;border-radius:14px;border:1px solid var(--line);margin:8px 0 12px;background:var(--bg)}
+.acts{display:flex;gap:10px}
+.acts button{flex:1;font:inherit;font-weight:700;font-size:15px;padding:11px 14px;border-radius:12px;border:1px solid var(--line);cursor:pointer}
+.acts .pri{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.acts .sec{background:var(--bg);color:var(--ink)}
+@media (max-width:600px){.next{margin-bottom:10px;padding:8px 11px 9px}.next .t{font-size:15px}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="head">
     <h1 id="ttl"></h1>
-    <p class="name" dir="rtl" lang="ar">يوسف الصياد</p>
+    <p class="name" dir="rtl" lang="ar">يوسف ابراهيم راضي الصياد</p>
     <div class="meta"><span id="m1"></span><span id="m2"></span><span id="m3"></span></div>
   </header>
 
@@ -216,9 +251,10 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
       <button id="lEn" aria-pressed="true">EN</button>
       <button id="lAr" aria-pressed="false" lang="ar">عربي</button>
     </div>
-    <div class="seg"><button id="thm" class="ico-btn" type="button"></button></div>
+    <div class="seg"><button id="mnu" class="ico-btn" type="button" aria-haspopup="dialog"></button></div>
   </div>
-  <div class="status" id="status" style="margin:0 2px 12px"></div>
+
+  <div id="nextWrap"></div>
 
   <section id="dayView">
     <div class="days" id="days"></div>
@@ -234,19 +270,27 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
   <p class="foot" id="foot"></p>
 </div>
 
+<div class="overlay" id="ov" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
+
 <script>
 const T={
   en:{title:"Weekly timetable",level:"Junior",program:"Biomedical & Bio-systems Engineering · 2020 program",
-    advisor:"Advisor: Eng. Atallah Mohamed Ali",day:"Day",week:"Week",now:"Now",today:"Today",next:"next",at:"at",
-    nowL:"now",done:"done for today",none:"no classes",free:"Free",prof:"Professor",
-    empty:"No classes. Enjoy the free day.",hint:"Swipe sideways to see every day.",
+    advisor:"Advisor: Eng. Atallah Mohamed Ali",day:"Day",week:"Week",now:"Now",next:"Next",tomorrow:"Tomorrow",
+    free:"Free",prof:"Professor",empty:"No classes. Enjoy the free day.",hint:"Swipe sideways to see every day.",
     foot:"English names are my translations and transliterations of the Arabic originals. Check them against your official schedule.",
-    Lecture:"Lecture",Class:"Class",Lab:"Lab",h:"h",m:"m"},
+    Lecture:"Lecture",Class:"Class",Lab:"Lab",h:"h",m:"m",
+    menu:"Menu",nextCard:"Next-class card",dark:"Dark mode",abs:"Absences",absHint:"Tap + each time you miss a class.",
+    exp:"Export as image",reset:"Reset all",resetQ:"Reset all absence counts to 0?",back:"Back",close:"Close",
+    save:"Save image",share:"Share",making:"Making your image…",expHint:"You can also press and hold the image to save it.",
+    inL:t=>"in "+t,endsL:t=>"ends in "+t},
   ar:{title:"الجدول الأسبوعي",level:"المستوى: Junior",program:"الهندسة الطبية والحيوية · برنامج 2020",
-    advisor:"المرشد: المهندس / عطاالله محمد علي",day:"يوم",week:"أسبوع",now:"الآن",today:"اليوم",next:"التالي",at:"الساعة",
-    nowL:"الآن",done:"انتهت محاضرات اليوم",none:"لا توجد محاضرات",free:"فراغ",prof:"الأستاذ",
-    empty:"لا توجد محاضرات. استمتع بيوم الراحة.",hint:"مرّر جانبًا لرؤية كل الأيام.",foot:"",
-    Lecture:"محاضرة",Class:"فصل",Lab:"معمل",h:"س",m:"د"}
+    advisor:"المرشد: المهندس / عطاالله محمد علي",day:"يوم",week:"أسبوع",now:"الآن",next:"التالي",tomorrow:"غدًا",
+    free:"فراغ",prof:"الأستاذ",empty:"لا توجد محاضرات. استمتع بيوم الراحة.",hint:"مرّر جانبًا لرؤية كل الأيام.",foot:"",
+    Lecture:"محاضرة",Class:"فصل",Lab:"معمل",h:"س",m:"د",
+    menu:"القائمة",nextCard:"بطاقة الحصة القادمة",dark:"الوضع الداكن",abs:"الغياب",absHint:"اضغط + كلما غبت عن حصة.",
+    exp:"تصدير كصورة",reset:"تصفير الكل",resetQ:"تصفير كل عدّادات الغياب؟",back:"رجوع",close:"إغلاق",
+    save:"حفظ الصورة",share:"مشاركة",making:"جارٍ تجهيز الصورة…",expHint:"يمكنك أيضًا الضغط مطولًا على الصورة لحفظها.",
+    inL:t=>"بعد "+t,endsL:t=>"تنتهي بعد "+t}
 };
 const DAYS=[
   {en:"Saturday",ar:"السبت"},{en:"Sunday",ar:"الأحد"},{en:"Monday",ar:"الأثنين"},
@@ -269,57 +313,66 @@ const B6216={en:"B6216 · Block 6",ar:"B6216 · بلوك 6"};
 const B2014={en:"B2014 · Block 2",ar:"B2014 · بلوك 2"};
 const WHO1={en:"Prof. Dr. Noura Ibrahim Anwar Pasha",ar:"أ.د. نورا ابراهيم انور باشا"};
 const WHO2={en:"Seham Abdel Sameea Attia El-Sayed Ali",ar:"سهام عبد السميع عطية السيد علي"};
+
+/* Periods are 50 minutes, back to back from 8:30.  p = period number (0 = 8:30), n = how many periods. */
+const START=510, PERIOD=50;
 const CLASSES=[
-  {d:1,s:"08:30",e:"10:00",c:"ECE295",k:"Lecture",room:R304,place:PLACE,who:WHO1},
-  {d:1,s:"10:00",e:"11:30",c:"BME228",k:"Lecture",room:R304,place:PLACE},
-  {d:1,s:"11:30",e:"13:00",c:"ECE284",k:"Lecture",room:R307,place:PLACE,who:WHO2},
-  {d:1,s:"13:00",e:"13:45",c:"BME228",k:"Class",n:1,room:B6217},
-  {d:1,s:"13:45",e:"14:30",c:"BME228",k:"Lab",n:1,room:B6217},
-  {d:2,s:"09:15",e:"10:00",c:"UNR241",k:"Lecture",room:R304,place:PLACE},
-  {d:2,s:"13:00",e:"13:45",c:"BME238",k:"Lab",n:2,room:B6217},
-  {d:2,s:"13:45",e:"14:30",c:"BME238",k:"Class",n:2,room:B6217},
-  {d:2,s:"14:30",e:"16:00",c:"CSE221",k:"Lecture",room:R307,place:PLACE},
-  {d:3,s:"10:00",e:"11:30",c:"ECE284",k:"Class",n:1,room:B2014},
-  {d:3,s:"11:30",e:"13:00",c:"ECE295",k:"Class",n:1,
+  {d:1,p:0,n:2,c:"ECE295",k:"Lecture",room:R304,place:PLACE,who:WHO1},
+  {d:1,p:2,n:2,c:"BME228",k:"Lecture",room:R304,place:PLACE},
+  {d:1,p:4,n:2,c:"ECE284",k:"Lecture",room:R307,place:PLACE,who:WHO2},
+  {d:1,p:6,n:1,c:"BME228",k:"Class",num:1,room:B6217},
+  {d:1,p:7,n:1,c:"BME228",k:"Lab",num:1,room:B6217},
+  {d:2,p:1,n:1,c:"UNR241",k:"Lecture",room:R304,place:PLACE},
+  {d:2,p:6,n:1,c:"BME238",k:"Lab",num:2,room:B6217},
+  {d:2,p:7,n:1,c:"BME238",k:"Class",num:2,room:B6217},
+  {d:2,p:8,n:2,c:"CSE221",k:"Lecture",room:R307,place:PLACE},
+  {d:3,p:2,n:2,c:"ECE284",k:"Class",num:1,room:B2014},
+  {d:3,p:4,n:2,c:"ECE295",k:"Class",num:1,
     room:{en:"Room 123 · Electronic Circuits Lab",ar:"123 · معمل الدوائر الإلكترونية"},
     place:{en:"ECE labs",ar:"معامل هندسة الإلكترونيات والاتصالات"}},
-  {d:4,s:"10:00",e:"11:30",c:"CSE221",k:"Class",n:1,room:B2014},
-  {d:4,s:"11:30",e:"13:00",c:"UNR241",k:"Class",n:1,room:B6216},
-  {d:4,s:"13:00",e:"14:30",c:"BME238",k:"Lecture",room:R307,place:PLACE},
-  {d:5,s:"10:00",e:"11:30",c:"CSE364",k:"Lecture",room:R307,place:PLACE},
-  {d:5,s:"13:00",e:"14:30",c:"CSE364",k:"Class",n:2,room:B6217}
-];
+  {d:4,p:2,n:2,c:"CSE221",k:"Class",num:1,room:B2014},
+  {d:4,p:4,n:2,c:"UNR241",k:"Class",num:1,room:B6216},
+  {d:4,p:6,n:2,c:"BME238",k:"Lecture",room:R307,place:PLACE},
+  {d:5,p:2,n:2,c:"CSE364",k:"Lecture",room:R307,place:PLACE},
+  {d:5,p:6,n:2,c:"CSE364",k:"Class",num:2,room:B6217}
+].map(x=>({...x,s:START+PERIOD*x.p,e:START+PERIOD*(x.p+x.n)}));
+const END=START+PERIOD*10;
 const KIND={Lecture:"lec",Class:"cls",Lab:"lab"};
+const HUE={lec:222,cls:34,lab:162};
+
 const $=id=>document.getElementById(id);
-const m=t=>{const[a,b]=t.split(":").map(Number);return a*60+b};
-const fmt=t=>{const[a,b]=t.split(":");return (+a)+":"+b};
-const byDay=d=>CLASSES.filter(x=>x.d===d).sort((a,b)=>m(a.s)-m(b.s));
+const fmt=n=>Math.floor(n/60)+":"+String(n%60).padStart(2,"0");
+const byDay=d=>CLASSES.filter(x=>x.d===d).sort((a,b)=>a.s-b.s);
 const ico='<svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>';
+const MENU='<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>';
+const XI='<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+const BACK='<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>';
+const CHEV='<svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>';
 
 let lang="en";
 try{const s=localStorage.getItem("tt-lang");lang=s||((navigator.language||"").startsWith("ar")?"ar":"en")}catch(e){}
 let view=window.innerWidth>=760?"week":"day";
+let showNext=true;try{showNext=localStorage.getItem("tt-next")!=="0"}catch(e){}
+let abs={};try{abs=JSON.parse(localStorage.getItem("tt-abs")||"{}")||{}}catch(e){}
+const saveAbs=()=>{try{localStorage.setItem("tt-abs",JSON.stringify(abs))}catch(e){}};
 
 const L=()=>T[lang];
-const tn=x=>L()[x.k]+(x.n?" "+x.n:"");
-const mins=n=>(n>=60?Math.floor(n/60)+L().h+" ":"")+(n%60?n%60+L().m:"");
-const dur=x=>mins(m(x.e)-m(x.s)).trim();
+const tn=x=>L()[x.k]+(x.num?" "+x.num:"");
+const mins=n=>((n>=60?Math.floor(n/60)+L().h+" ":"")+(n%60?n%60+L().m:"")).trim();
+const nowParts=()=>{const d=new Date();return{idx:(d.getDay()+1)%7,min:d.getHours()*60+d.getMinutes()}};
+let sel=nowParts().idx;
 
-const now=new Date();
-const todayIdx=(now.getDay()+1)%7;
-const nowMin=now.getHours()*60+now.getMinutes();
-let sel=todayIdx;
-
+/* ---------- day strip + day view ---------- */
 function renderDays(){
   const box=$("days");box.innerHTML="";
+  const today=nowParts().idx;
   DAYS.forEach((d,i)=>{
     const n=byDay(i).length;
     const b=document.createElement("button");
     b.type="button";
-    b.className=(i===todayIdx?"today ":"")+(n?"":"off");
+    b.className=(i===today?"today ":"")+(n?"":"off");
     b.setAttribute("aria-pressed",i===sel);
-    const nm=lang==="ar"?d.ar:d.en.slice(0,3);
-    b.innerHTML='<span class="d">'+nm+'</span><span class="dots">'+Array.from({length:Math.min(n,5)},()=>"<i></i>").join("")+'</span>';
+    b.innerHTML='<span class="d">'+(lang==="ar"?d.ar:d.en.slice(0,3))+'</span><span class="dots">'+Array.from({length:Math.min(n,5)},()=>"<i></i>").join("")+'</span>';
     b.onclick=()=>{sel=i;renderDays();renderDay()};
     box.appendChild(b);
   });
@@ -327,12 +380,13 @@ function renderDays(){
 
 function renderDay(){
   const d=DAYS[sel],list=byDay(sel),other=lang==="ar"?"en":"ar";
+  const {idx,min}=nowParts();
   let h=`<div class="dayhead"><h2>${d[lang]}</h2><span class="sub" ${other==="ar"?'dir="rtl" lang="ar"':''}>${d[other]}</span></div>`;
   if(!list.length)h+=`<div class="empty">${L().empty}</div>`;
   list.forEach((x,i)=>{
     const c=COURSES[x.c];
-    const live=sel===todayIdx&&nowMin>=m(x.s)&&nowMin<m(x.e);
-    if(i>0){const g=m(x.s)-m(list[i-1].e);if(g>0)h+=`<div class="gap">${L().free} · ${mins(g).trim()}</div>`}
+    const live=sel===idx&&min>=x.s&&min<x.e;
+    if(i>0){const g=x.s-list[i-1].e;if(g>0)h+=`<div class="gap">${L().free} · ${mins(g)}</div>`}
     h+=`<div class="row"><div class="time">${fmt(x.s)}<small>${fmt(x.e)}</small></div>
       <article class="card c ${KIND[x.k]}">
         <div class="top"><span class="code">${x.c}</span><span class="badge">${tn(x)}</span>${live?`<span class="badge now">${L().now}</span>`:""}</div>
@@ -344,22 +398,22 @@ function renderDay(){
   $("dayBody").innerHTML=h;
 }
 
+/* ---------- week view ---------- */
 function renderWeek(){
-  const PX=1.25,w=$("week");
+  const PX=1.25,w=$("week"),today=nowParts().idx;
   w.style.setProperty("--px",PX);
   let h='<div class="hd"></div>';
   DAYS.forEach((d,i)=>{
-    const other=lang==="ar"?"en":"ar";
-    h+=`<div class="hd${i===todayIdx?" today":""}">${lang==="ar"?d.ar:d.en.slice(0,3)}<small>${lang==="ar"?d.en.slice(0,3):d.ar}</small></div>`;
+    h+=`<div class="hd${i===today?" today":""}">${lang==="ar"?d.ar:d.en.slice(0,3)}<small>${lang==="ar"?d.en.slice(0,3):d.ar}</small></div>`;
   });
   h+=`<div class="axis" style="--px:${PX}">`;
-  for(let t=510;t<=960;t+=45){h+=`<span style="top:${(t-510)*PX}px">${Math.floor(t/60)}:${String(t%60).padStart(2,"0")}</span>`}
+  for(let t=START;t<=END;t+=PERIOD){h+=`<span style="top:${(t-START)*PX}px">${fmt(t)}</span>`}
   h+='</div>';
   DAYS.forEach((d,i)=>{
-    h+=`<div class="col${i===todayIdx?" today":""}" style="--px:${PX}">`;
+    h+=`<div class="col${i===today?" today":""}" style="--px:${PX}">`;
     byDay(i).forEach(x=>{
       const c=COURSES[x.c];
-      const top=(m(x.s)-510)*PX+1,ht=(m(x.e)-m(x.s))*PX-2;
+      const top=(x.s-START)*PX+1,ht=(x.e-x.s)*PX-2;
       h+=`<div class="blk c ${KIND[x.k]}" style="top:${top}px;height:${ht}px" title="${c[lang]}">
         <span class="code">${x.c}</span><span class="nm">${c[lang]}</span>
         ${ht>70?`<span class="ty">${tn(x)}</span>`:""}
@@ -374,17 +428,32 @@ function renderLegend(){
   $("legend").innerHTML=["Lecture","Class","Lab"].map(k=>`<span class="c ${KIND[k]}"><i></i>${L()[k]}</span>`).join("");
 }
 
-function renderStatus(){
-  const list=byDay(todayIdx);
-  const cur=list.find(x=>nowMin>=m(x.s)&&nowMin<m(x.e));
-  const nxt=list.find(x=>m(x.s)>nowMin);
-  let s=`${L().today}: <b>${DAYS[todayIdx][lang]}</b>`;
-  if(cur)s+=` · ${L().nowL} <b>${cur.c}</b>`;
-  else if(nxt)s+=` · ${L().next} <b>${nxt.c}</b> ${L().at} ${fmt(nxt.s)}`;
-  else s+=" · "+(list.length?L().done:L().none);
-  $("status").innerHTML=s;
+/* ---------- next-class card ---------- */
+function findNext(){
+  const {idx,min}=nowParts();
+  for(let off=0;off<=7;off++){
+    const di=(idx+off)%7;
+    for(const x of byDay(di)){
+      if(off===0){if(min>=x.e)continue;return{x,off,di,live:min>=x.s}}
+      return{x,off,di,live:false};
+    }
+  }
+  return null;
+}
+function renderNext(){
+  const w=$("nextWrap");
+  const r=showNext?findNext():null;
+  if(!r){w.innerHTML="";return}
+  const {x,off,di,live}=r,c=COURSES[x.c],{min}=nowParts();
+  const when=live?L().endsL(mins(x.e-min)):off===0?L().inL(mins(x.s-min)):(off===1?L().tomorrow:DAYS[di][lang])+" · "+fmt(x.s);
+  w.innerHTML=`<button type="button" class="next c ${KIND[x.k]}">
+    <div class="lbl"><span>${live?L().now:L().next}</span><span>${when}</span></div>
+    <div class="t"><span class="code">${x.c}</span> ${c[lang]}</div>
+    <div class="s">${tn(x)} · ${fmt(x.s)}–${fmt(x.e)} · ${x.room[lang]}</div></button>`;
+  w.firstChild.onclick=()=>{sel=di;setView("day");renderDays();renderDay()};
 }
 
+/* ---------- view / language / theme ---------- */
 function setView(v){
   view=v;
   $("vDay").setAttribute("aria-pressed",v==="day");
@@ -392,7 +461,6 @@ function setView(v){
   $("dayView").hidden=v!=="day";
   $("weekView").hidden=v!=="week";
 }
-
 function setLang(l){
   lang=l;
   try{localStorage.setItem("tt-lang",l)}catch(e){}
@@ -404,17 +472,10 @@ function setLang(l){
   $("ttl").textContent=L().title;
   $("m1").textContent=L().level;$("m2").textContent=L().program;$("m3").textContent=L().advisor;
   $("vDay").textContent=L().day;$("vWeek").textContent=L().week;
-  $("hint").textContent=L().hint;
-  $("foot").textContent=L().foot;
-  renderDays();renderDay();renderWeek();renderLegend();renderStatus();
+  $("hint").textContent=L().hint;$("foot").textContent=L().foot;
+  $("mnu").setAttribute("aria-label",L().menu);
+  renderDays();renderDay();renderWeek();renderLegend();renderNext();
 }
-
-$("vDay").onclick=()=>setView("day");
-$("vWeek").onclick=()=>setView("week");
-$("lEn").onclick=()=>setLang("en");
-$("lAr").onclick=()=>setLang("ar");
-const SUN='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
-const MOON='<svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
 let theme="light";
 try{theme=localStorage.getItem("tt-theme")||(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")}catch(e){}
 function setTheme(t){
@@ -423,14 +484,149 @@ function setTheme(t){
   document.documentElement.setAttribute("data-theme",t);
   const mt=document.querySelector('meta[name="theme-color"]');
   if(mt)mt.setAttribute("content",t==="dark"?"#0e1320":"#f4f2ed");
-  const b=$("thm");
-  b.innerHTML=t==="dark"?SUN:MOON;
-  b.setAttribute("aria-label",t==="dark"?"Switch to light mode":"Switch to dark mode");
 }
-$("thm").onclick=()=>setTheme(theme==="dark"?"light":"dark");
+function setNext(v){showNext=v;try{localStorage.setItem("tt-next",v?"1":"0")}catch(e){}renderNext()}
+
+/* ---------- menu sheet: settings, absences, export ---------- */
+let screen="main",expUrl="",expBlob=null;
+const sw=(a,on)=>`<button type="button" class="sw" role="switch" aria-checked="${on}" data-a="${a}"><i></i></button>`;
+const head=(title,back)=>`<div class="sh-h">${back?`<button type="button" class="rb" data-a="back" aria-label="${L().back}">${BACK}</button>`:""}<h2>${title}</h2><button type="button" class="rb" data-a="close" aria-label="${L().close}">${XI}</button></div>`;
+
+function renderSheet(){
+  let h="";
+  if(screen==="main"){
+    h=head(L().menu,false)+
+      `<div class="item"><span>${L().nextCard}</span>${sw("next",showNext)}</div>
+       <div class="item"><span>${L().dark}</span>${sw("dark",theme==="dark")}</div>
+       <button type="button" class="item btn" data-a="abs"><span>${L().abs}</span>${CHEV}</button>
+       <button type="button" class="item btn" data-a="exp"><span>${L().exp}</span>${CHEV}</button>`;
+  }else if(screen==="abs"){
+    h=head(L().abs,true)+`<p class="muted">${L().absHint}</p>`+
+      Object.keys(COURSES).map(k=>`<div class="item"><span class="cn"><b class="code">${k}</b><span>${COURSES[k][lang]}</span></span>
+        <span class="ctr"><button type="button" data-a="dec" data-c="${k}" aria-label="−">−</button><output>${abs[k]||0}</output><button type="button" data-a="inc" data-c="${k}" aria-label="+">+</button></span></div>`).join("")+
+      `<button type="button" class="link" data-a="reset">${L().reset}</button>`;
+  }else{
+    const canShare=!!(navigator.canShare&&expBlob&&navigator.canShare({files:[new File([expBlob],"timetable.png",{type:"image/png"})]}));
+    h=head(L().exp,true)+(expUrl?
+      `<img class="prev" src="${expUrl}" alt="${L().title}">
+       <div class="acts"><button type="button" class="pri" data-a="save">${L().save}</button>${canShare?`<button type="button" class="sec" data-a="share">${L().share}</button>`:""}</div>
+       <p class="muted">${L().expHint}</p>`:`<p class="muted">${L().making}</p>`);
+  }
+  $("sheet").innerHTML=h;
+}
+function openSheet(){screen="main";$("ov").hidden=false;document.body.style.overflow="hidden";renderSheet()}
+function closeSheet(){$("ov").hidden=true;document.body.style.overflow=""}
+$("mnu").innerHTML=MENU;
+$("mnu").onclick=openSheet;
+$("ov").addEventListener("click",e=>{if(e.target===$("ov"))closeSheet()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet()});
+$("sheet").addEventListener("click",e=>{
+  const b=e.target.closest("[data-a]");if(!b)return;
+  const a=b.dataset.a,c=b.dataset.c;
+  if(a==="close")closeSheet();
+  else if(a==="back"){screen="main";renderSheet()}
+  else if(a==="next"){setNext(!showNext);renderSheet()}
+  else if(a==="dark"){setTheme(theme==="dark"?"light":"dark");renderSheet()}
+  else if(a==="abs"){screen="abs";renderSheet()}
+  else if(a==="inc"){abs[c]=(abs[c]||0)+1;saveAbs();renderSheet()}
+  else if(a==="dec"){abs[c]=Math.max(0,(abs[c]||0)-1);saveAbs();renderSheet()}
+  else if(a==="reset"){if(confirm(L().resetQ)){abs={};saveAbs();renderSheet()}}
+  else if(a==="exp"){screen="exp";expUrl="";expBlob=null;renderSheet();makeImage()}
+  else if(a==="save"){const l=document.createElement("a");l.href=expUrl;l.download="timetable.png";document.body.appendChild(l);l.click();l.remove()}
+  else if(a==="share"){navigator.share({files:[new File([expBlob],"timetable.png",{type:"image/png"})],title:L().title}).catch(()=>{})}
+});
+
+/* ---------- export as image (drawn on a canvas, no libraries) ---------- */
+function rr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath()}
+function wrap(c,text,maxW){
+  const words=text.split(" "),lines=[];let cur="";
+  for(const w of words){const t=cur?cur+" "+w:w;if(c.measureText(t).width>maxW&&cur){lines.push(cur);cur=w}else cur=t}
+  if(cur)lines.push(cur);return lines;
+}
+async function makeImage(){
+  try{await document.fonts.load('700 24px Cairo');await document.fonts.load('700 24px Sora');await document.fonts.ready}catch(e){}
+  const dark=theme==="dark",ar=lang==="ar";
+  const col=dark?{bg:"#0e1320",ink:"#eef1f7",muted:"#9aa5bb",line:"#28324a"}:{bg:"#f4f2ed",ink:"#1f2430",muted:"#646a78",line:"#e3e0d8"};
+  const tint=h=>dark?`hsl(${h} 38% 20%)`:`hsl(${h} 58% 92%)`;
+  const tone=h=>dark?`hsl(${h} 75% 72%)`:`hsl(${h} 62% 38%)`;
+  const days=DAYS.map((d,i)=>i).filter(i=>byDay(i).length);
+  const n=days.length,W=1080,M=36,AX=88,PX=2.6,GX=ar?M:M+AX,colW=(W-2*M-AX)/n;
+  const HY=232,GY=296,GB=GY+(END-START)*PX,H=GB+130;
+  const cv=document.createElement("canvas");cv.width=W;cv.height=H;
+  const c=cv.getContext("2d");
+  c.fillStyle=col.bg;c.fillRect(0,0,W,H);
+  const FONT='Cairo, "Segoe UI", sans-serif',MONO='Sora, Cairo, sans-serif';
+  const colX=j=>ar?GX+(n-1-j)*colW:GX+j*colW;
+  // header
+  c.textAlign=ar?"right":"left";const hx=ar?W-M:M;
+  c.direction=ar?"rtl":"ltr";c.fillStyle=col.ink;c.font=`800 58px ${FONT}`;c.fillText(L().title,hx,100);
+  c.direction="rtl";c.fillStyle=col.ink;c.font=`700 34px ${FONT}`;c.fillText("يوسف ابراهيم راضي الصياد",hx,158);
+  c.direction=ar?"rtl":"ltr";c.fillStyle=col.muted;c.font=`600 25px ${FONT}`;c.fillText(L().level+" · "+L().program,hx,204);
+  // day headers + grid
+  c.textAlign="center";
+  days.forEach((di,j)=>{
+    const x=colX(j);
+    c.fillStyle=dark?"#171e2e":"#fbfaf7";rr(c,x+4,HY,colW-8,54,14);c.fill();
+    c.fillStyle=col.ink;c.direction=ar?"rtl":"ltr";c.font=`700 27px ${FONT}`;c.fillText(DAYS[di][lang],x+colW/2,HY+37);
+  });
+  c.strokeStyle=col.line;c.lineWidth=2;
+  for(let t=START;t<=END;t+=PERIOD){
+    const y=GY+(t-START)*PX;
+    c.beginPath();c.moveTo(GX,y);c.lineTo(GX+n*colW,y);c.stroke();
+    c.fillStyle=col.muted;c.direction="ltr";c.font=`600 22px ${MONO}`;c.textAlign="center";
+    c.fillText(fmt(t),(ar?W-M-AX:M)+AX/2,y+8);
+  }
+  // blocks
+  days.forEach((di,j)=>{
+    const x0=colX(j);
+    byDay(di).forEach(x=>{
+      const kind=KIND[x.k],hue=HUE[kind];
+      const bx=x0+6,bw=colW-12,by=GY+(x.s-START)*PX+4,bh=(x.e-x.s)*PX-8;
+      c.fillStyle=tint(hue);rr(c,bx,by,bw,bh,16);c.fill();
+      c.fillStyle=tone(hue);rr(c,ar?bx+bw-8:bx,by+12,8,bh-24,4);c.fill();
+      const cx=bx+bw/2;let ty=by+36;
+      c.textAlign="center";
+      c.direction="ltr";c.font=`700 27px ${MONO}`;c.fillStyle=tone(hue);c.fillText(x.c,cx,ty);ty+=32;
+      c.direction=ar?"rtl":"ltr";c.fillStyle=col.ink;
+      {
+        const nm=COURSES[x.c][lang],maxW=bw-30;let fs=24,lines=[];
+        for(;fs>=14;fs--){
+          c.font=`700 ${fs}px ${FONT}`;lines=wrap(c,nm,maxW);
+          const wide=lines.some(l=>c.measureText(l).width>maxW);
+          if(!wide&&ty+(lines.length-1)*fs*1.25<=by+bh-12)break;
+        }
+        for(const ln of lines){c.fillText(ln,cx,ty);ty+=fs*1.25}
+        ty+=6;
+      }
+      c.font=`600 21px ${FONT}`;c.fillStyle=col.muted;
+      if(ty<=by+bh-12){c.fillText(tn(x),cx,ty);ty+=27}
+      if(ty<=by+bh-12){c.fillText(x.room[lang].split(" · ")[0],cx,ty)}
+    });
+  });
+  // legend
+  c.direction=ar?"rtl":"ltr";c.font=`700 24px ${FONT}`;
+  const items=["Lecture","Class","Lab"].map(k=>({k,t:L()[k]}));
+  const wd=items.map(i=>34+c.measureText(i.t).width);
+  const total=wd.reduce((a,b)=>a+b,0)+(items.length-1)*44;
+  let lx=(W-total)/2;const ly=GB+72;
+  c.textAlign="left";
+  items.forEach((i,k)=>{
+    c.fillStyle=tone(HUE[KIND[i.k]]);rr(c,lx,ly-20,22,22,6);c.fill();
+    c.fillStyle=col.ink;c.fillText(i.t,lx+34,ly);lx+=wd[k]+44;
+  });
+  const blob=await new Promise(r=>cv.toBlob(r,"image/png"));
+  if(!blob||screen!=="exp")return;
+  if(expUrl)URL.revokeObjectURL(expUrl);
+  expBlob=blob;expUrl=URL.createObjectURL(blob);renderSheet();
+}
+
+/* ---------- start ---------- */
 setTheme(theme);
 setLang(lang);
 setView(view);
+setInterval(()=>{if(!document.hidden)renderNext()},30000);
+setInterval(()=>{if(!document.hidden&&sel===nowParts().idx)renderDay()},60000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderNext();renderDays();renderDay()}});
 </script>
 <script>
 if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{})})}
