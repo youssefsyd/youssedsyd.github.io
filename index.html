@@ -18,8 +18,8 @@
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px);
   padding-bottom:env(safe-area-inset-bottom,0px);
-  --bg:#eef1f6; --surface:#ffffff; --ink:#101828; --muted:#5b6578; --line:#dde2ec; --accent:#1f3a8a;
-  --tint-l:93%; --tint-s:75%; --tone-l:38%; --tone-s:70%;
+  --bg:#f4f2ed; --surface:#fbfaf7; --ink:#1f2430; --muted:#646a78; --line:#e3e0d8; --accent:#2a448f;
+  --tint-l:92%; --tint-s:58%; --tone-l:38%; --tone-s:62%;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
@@ -203,7 +203,7 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 <div class="wrap">
   <header class="head">
     <h1 id="ttl"></h1>
-    <p class="name" dir="rtl" lang="ar">يوسف ابراهيم راضي ابراهيم اسماعيل الصياد</p>
+    <p class="name" dir="rtl" lang="ar">يوسف الصياد</p>
     <div class="meta"><span id="m1"></span><span id="m2"></span><span id="m3"></span></div>
   </header>
 
@@ -422,7 +422,7 @@ function setTheme(t){
   try{localStorage.setItem("tt-theme",t)}catch(e){}
   document.documentElement.setAttribute("data-theme",t);
   const mt=document.querySelector('meta[name="theme-color"]');
-  if(mt)mt.setAttribute("content",t==="dark"?"#0e1320":"#eef1f6");
+  if(mt)mt.setAttribute("content",t==="dark"?"#0e1320":"#f4f2ed");
   const b=$("thm");
   b.innerHTML=t==="dark"?SUN:MOON;
   b.setAttribute("aria-label",t==="dark"?"Switch to light mode":"Switch to dark mode");
