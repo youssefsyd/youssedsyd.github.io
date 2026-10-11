@@ -95,7 +95,7 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .dayhead h2{margin:0;font-family:"Sora","Cairo",sans-serif;font-size:22px;letter-spacing:-.01em}
 .dayhead .ar{font-size:20px;font-weight:700;color:var(--muted)}
 .row{display:grid;grid-template-columns:54px 1fr;gap:12px;margin-bottom:10px}
-.time{font-family:"Sora",sans-serif;font-size:13px;font-weight:600;text-align:right;padding-top:12px;line-height:1.35}
+.time{font-family:"Sora",sans-serif;font-size:13px;font-weight:600;text-align:end;padding-top:12px;line-height:1.35}
 .time small{display:block;color:var(--muted);font-weight:500}
 .card{
   background:var(--tint); border-radius:16px; padding:12px 14px 13px;
@@ -108,13 +108,13 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
   background:var(--surface);color:var(--ink);
 }
 .badge.now{background:var(--ink);color:var(--bg)}
-.card h3{margin:5px 0 0;font-size:20px;line-height:1.35;text-align:left;font-weight:800}
+.card h3{margin:5px 0 0;font-size:20px;line-height:1.35;text-align:start;font-weight:800}
 .note{margin-top:10px;padding-top:8px;border-top:1px solid color-mix(in srgb,var(--tone) 30%,transparent);font-size:14px;display:flex;gap:7px;align-items:baseline;flex-wrap:wrap}
 .note b{font-size:12.5px;color:var(--tone);font-weight:700}
 .info{margin-top:8px;display:flex;flex-direction:column;gap:2px;font-size:14px}
 .info div{display:flex;gap:7px;align-items:baseline}
 .info svg{width:14px;height:14px;flex:none;align-self:center;stroke:var(--tone);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.gap{margin:-2px 0 10px 66px;font-size:13px;color:var(--muted);font-weight:600;padding-inline-start:14px;border-inline-start:2px dashed var(--line)}
+.gap{margin:-2px 0 10px 0;margin-inline-start:66px;font-size:13px;color:var(--muted);font-weight:600;padding-inline-start:14px;border-inline-start:2px dashed var(--line)}
 .empty{
   background:var(--surface);border:1px dashed var(--line);border-radius:16px;
   padding:34px 16px;text-align:center;color:var(--muted);font-weight:600
@@ -131,7 +131,7 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .week .hd.today{color:var(--accent)}
 .axis,.col{position:relative;height:calc(450px * var(--px))}
 .axis span{
-  position:absolute;right:6px;transform:translateY(-50%);
+  position:absolute;inset-inline-end:6px;transform:translateY(-50%);
   font-family:"Sora",sans-serif;font-size:11px;font-weight:600;color:var(--muted)
 }
 .col{border-inline-start:1px solid var(--line);
@@ -155,30 +155,33 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 [hidden]{display:none!important}
 @media (max-width:520px){
   .row{grid-template-columns:46px 1fr;gap:10px}
-  .gap{margin-left:56px}
+  .gap{margin-inline-start:56px}
   .days button{padding:7px 0 6px}
 }
+.lang{margin-inline-start:auto}
+.lang button{padding:6px 14px}
+.dayhead .sub{font-size:18px;font-weight:700;color:var(--muted)}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="head">
-    <h1>Weekly timetable</h1>
+    <h1 id="ttl"></h1>
     <p class="name" dir="rtl" lang="ar">يوسف ابراهيم راضي ابراهيم اسماعيل الصياد</p>
-    <div class="meta">
-      <span>Junior</span>
-      <span>Biomedical &amp; Bio-systems Engineering · 2020 program</span>
-      <span>Advisor: Eng. Atallah Mohamed Ali</span>
-    </div>
+    <div class="meta"><span id="m1"></span><span id="m2"></span><span id="m3"></span></div>
   </header>
 
   <div class="bar">
     <div class="seg" role="group" aria-label="View">
-      <button id="vDay" aria-pressed="true">Day</button>
-      <button id="vWeek" aria-pressed="false">Week</button>
+      <button id="vDay" aria-pressed="true"></button>
+      <button id="vWeek" aria-pressed="false"></button>
     </div>
-    <div class="status" id="status"></div>
+    <div class="seg lang" role="group" aria-label="Language">
+      <button id="lEn" aria-pressed="true">EN</button>
+      <button id="lAr" aria-pressed="false" lang="ar">عربي</button>
+    </div>
   </div>
+  <div class="status" id="status" style="margin:0 2px 12px"></div>
 
   <section id="dayView">
     <div class="days" id="days"></div>
@@ -187,70 +190,86 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 
   <section id="weekView" hidden>
     <div class="weekscroll"><div class="week" id="week"></div></div>
-    <p class="hint">Swipe sideways to see every day.</p>
+    <p class="hint" id="hint"></p>
   </section>
 
   <div class="legend" id="legend"></div>
-  
+  <p class="foot" id="foot"></p>
 </div>
 
 <script>
+const T={
+  en:{title:"Weekly timetable",level:"Junior",program:"Biomedical & Bio-systems Engineering · 2020 program",
+    advisor:"Advisor: Eng. Atallah Mohamed Ali",day:"Day",week:"Week",now:"Now",today:"Today",next:"next",at:"at",
+    nowL:"now",done:"done for today",none:"no classes",free:"Free",prof:"Professor",
+    empty:"No classes. Enjoy the free day.",hint:"Swipe sideways to see every day.",
+    foot:"English names are my translations and transliterations of the Arabic originals. Check them against your official schedule.",
+    Lecture:"Lecture",Class:"Class",Lab:"Lab",h:"h",m:"m"},
+  ar:{title:"الجدول الأسبوعي",level:"المستوى: Junior",program:"الهندسة الطبية والحيوية · برنامج 2020",
+    advisor:"المرشد: المهندس / عطاالله محمد علي",day:"يوم",week:"أسبوع",now:"الآن",today:"اليوم",next:"التالي",at:"الساعة",
+    nowL:"الآن",done:"انتهت محاضرات اليوم",none:"لا توجد محاضرات",free:"فراغ",prof:"الأستاذ",
+    empty:"لا توجد محاضرات. استمتع بيوم الراحة.",hint:"مرّر جانبًا لرؤية كل الأيام.",foot:"",
+    Lecture:"محاضرة",Class:"فصل",Lab:"معمل",h:"س",m:"د"}
+};
 const DAYS=[
-  {en:"Sat",full:"Saturday", ar:"السبت"},
-  {en:"Sun",full:"Sunday",   ar:"الأحد"},
-  {en:"Mon",full:"Monday",   ar:"الأثنين"},
-  {en:"Tue",full:"Tuesday",  ar:"الثلاثاء"},
-  {en:"Wed",full:"Wednesday",ar:"الأربعاء"},
-  {en:"Thu",full:"Thursday", ar:"الخميس"},
-  {en:"Fri",full:"Friday",   ar:"الجمعة"}
+  {en:"Saturday",ar:"السبت"},{en:"Sunday",ar:"الأحد"},{en:"Monday",ar:"الأثنين"},
+  {en:"Tuesday",ar:"الثلاثاء"},{en:"Wednesday",ar:"الأربعاء"},{en:"Thursday",ar:"الخميس"},{en:"Friday",ar:"الجمعة"}
 ];
 const COURSES={
-  ECE295:{ar:"تحليل إشارات"},
-  BME228:{ar:"كيمياء حيوية"},
-  ECE284:{ar:"مجالات كهرومغناطيسية"},
-  BME238:{ar:"مقدمة لعلم التشريح"},
-  CSE221:{ar:"تحكم آلي"},
-  UNR241:{ar:"مهارات الاتصال والعرض"},
-  CSE364:{ar:"إنترنت الأشياء الطبية"}
+  ECE295:{en:"Signal Analysis",ar:"تحليل إشارات"},
+  BME228:{en:"Biochemistry",ar:"كيمياء حيوية"},
+  ECE284:{en:"Electromagnetic Fields",ar:"مجالات كهرومغناطيسية"},
+  BME238:{en:"Introduction to Anatomy",ar:"مقدمة لعلم التشريح"},
+  CSE221:{en:"Automatic Control",ar:"تحكم آلي"},
+  UNR241:{en:"Communication and Presentation Skills",ar:"مهارات الاتصال والعرض"},
+  CSE364:{en:"Medical Internet of Things",ar:"إنترنت الأشياء الطبية"}
 };
-const H304={room:"H304 · Room 304",place:"البرامج النوعية"};
-const H307={room:"H307 · Room 307",place:"البرامج النوعية"};
+const PLACE={en:"Specialized Programs",ar:"البرامج النوعية"};
+const R304={en:"H304 · Room 304",ar:"مبنى H304 · قاعة 304"};
+const R307={en:"H307 · Room 307",ar:"مبنى H307 · قاعة 307"};
+const B6217={en:"B6217 · Block 6",ar:"B6217 · بلوك 6"};
+const B6216={en:"B6216 · Block 6",ar:"B6216 · بلوك 6"};
+const B2014={en:"B2014 · Block 2",ar:"B2014 · بلوك 2"};
+const WHO1={en:"Prof. Dr. Noura Ibrahim Anwar Pasha",ar:"أ.د. نورا ابراهيم انور باشا"};
+const WHO2={en:"Seham Abdel Sameea Attia El-Sayed Ali",ar:"سهام عبد السميع عطية السيد علي"};
 const CLASSES=[
-  // Sunday
-  {d:1,s:"08:30",e:"10:00",c:"ECE295",t:"Lecture",...H304,who:"د. نورا ابراهيم انور باشا"},
-  {d:1,s:"10:00",e:"11:30",c:"BME228",t:"Lecture",...H304},
-  {d:1,s:"11:30",e:"13:00",c:"ECE284",t:"Lecture",...H307,who:"سهام عبد السميع عطية السيد علي"},
-  {d:1,s:"13:00",e:"13:45",c:"BME228",t:"Class 1",room:"B6217 · Block 6"},
-  {d:1,s:"13:45",e:"14:30",c:"BME228",t:"Lab 1",room:"B6217 · Block 6"},
-  // Monday
-  {d:2,s:"09:15",e:"10:00",c:"UNR241",t:"Lecture",...H304},
-  {d:2,s:"13:00",e:"13:45",c:"BME238",t:"Lab 2",room:"B6217 · Block 6"},
-  {d:2,s:"13:45",e:"14:30",c:"BME238",t:"Class 2",room:"B6217 · Block 6"},
-  {d:2,s:"14:30",e:"16:00",c:"CSE221",t:"Lecture",...H307},
-  // Tuesday
-  {d:3,s:"10:00",e:"11:30",c:"ECE284",t:"Class 1",room:"B2014 · Block 2"},
-  {d:3,s:"11:30",e:"13:00",c:"ECE295",t:"Class 1",room:"Room 123 · Electronic Circuits Lab",place:"ECE labs"},
-  // Wednesday
-  {d:4,s:"10:00",e:"11:30",c:"CSE221",t:"Class 1",room:"B2014 · Block 2"},
-  {d:4,s:"11:30",e:"13:00",c:"UNR241",t:"Class 1",room:"B6216 · Block 6"},
-  {d:4,s:"13:00",e:"14:30",c:"BME238",t:"Lecture",...H307},
-  // Thursday
-  {d:5,s:"10:00",e:"11:30",c:"CSE364",t:"Lecture",...H307},
-  {d:5,s:"13:00",e:"14:30",c:"CSE364",t:"Class 2",room:"B6217 · Block 6"}
+  {d:1,s:"08:30",e:"10:00",c:"ECE295",k:"Lecture",room:R304,place:PLACE,who:WHO1},
+  {d:1,s:"10:00",e:"11:30",c:"BME228",k:"Lecture",room:R304,place:PLACE},
+  {d:1,s:"11:30",e:"13:00",c:"ECE284",k:"Lecture",room:R307,place:PLACE,who:WHO2},
+  {d:1,s:"13:00",e:"13:45",c:"BME228",k:"Class",n:1,room:B6217},
+  {d:1,s:"13:45",e:"14:30",c:"BME228",k:"Lab",n:1,room:B6217},
+  {d:2,s:"09:15",e:"10:00",c:"UNR241",k:"Lecture",room:R304,place:PLACE},
+  {d:2,s:"13:00",e:"13:45",c:"BME238",k:"Lab",n:2,room:B6217},
+  {d:2,s:"13:45",e:"14:30",c:"BME238",k:"Class",n:2,room:B6217},
+  {d:2,s:"14:30",e:"16:00",c:"CSE221",k:"Lecture",room:R307,place:PLACE},
+  {d:3,s:"10:00",e:"11:30",c:"ECE284",k:"Class",n:1,room:B2014},
+  {d:3,s:"11:30",e:"13:00",c:"ECE295",k:"Class",n:1,
+    room:{en:"Room 123 · Electronic Circuits Lab",ar:"123 · معمل الدوائر الإلكترونية"},
+    place:{en:"ECE labs",ar:"معامل هندسة الإلكترونيات والاتصالات"}},
+  {d:4,s:"10:00",e:"11:30",c:"CSE221",k:"Class",n:1,room:B2014},
+  {d:4,s:"11:30",e:"13:00",c:"UNR241",k:"Class",n:1,room:B6216},
+  {d:4,s:"13:00",e:"14:30",c:"BME238",k:"Lecture",room:R307,place:PLACE},
+  {d:5,s:"10:00",e:"11:30",c:"CSE364",k:"Lecture",room:R307,place:PLACE},
+  {d:5,s:"13:00",e:"14:30",c:"CSE364",k:"Class",n:2,room:B6217}
 ];
-const kind=x=>x.t.startsWith("Lecture")?"lec":x.t.startsWith("Lab")?"lab":"cls";
+const KIND={Lecture:"lec",Class:"cls",Lab:"lab"};
+const $=id=>document.getElementById(id);
 const m=t=>{const[a,b]=t.split(":").map(Number);return a*60+b};
 const fmt=t=>{const[a,b]=t.split(":");return (+a)+":"+b};
-const dur=x=>{const n=m(x.e)-m(x.s);return (n>=60?Math.floor(n/60)+"h ":"")+(n%60?n%60+"m":"")};
-const $=id=>document.getElementById(id);
-const ico={
-  pin:'<svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>',
-  user:'<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-6 8-6s8 2 8 6"/></svg>'
-};
 const byDay=d=>CLASSES.filter(x=>x.d===d).sort((a,b)=>m(a.s)-m(b.s));
+const ico='<svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>';
+
+let lang="en";
+try{const s=localStorage.getItem("tt-lang");lang=s||((navigator.language||"").startsWith("ar")?"ar":"en")}catch(e){}
+let view=window.innerWidth>=760?"week":"day";
+
+const L=()=>T[lang];
+const tn=x=>L()[x.k]+(x.n?" "+x.n:"");
+const mins=n=>(n>=60?Math.floor(n/60)+L().h+" ":"")+(n%60?n%60+L().m:"");
+const dur=x=>mins(m(x.e)-m(x.s)).trim();
 
 const now=new Date();
-const todayIdx=(now.getDay()+1)%7;           // Sat=0 ... Fri=6
+const todayIdx=(now.getDay()+1)%7;
 const nowMin=now.getHours()*60+now.getMinutes();
 let sel=todayIdx;
 
@@ -262,61 +281,52 @@ function renderDays(){
     b.type="button";
     b.className=i===todayIdx?"today":"";
     b.setAttribute("aria-pressed",i===sel);
-    b.setAttribute("aria-label",d.full+", "+n+" classes");
-    b.innerHTML='<span class="d">'+d.en+'</span><span class="dots">'+
-      Array.from({length:Math.min(n,5)},()=>"<i></i>").join("")+'</span>';
+    const nm=lang==="ar"?d.ar:d.en.slice(0,3);
+    b.innerHTML='<span class="d">'+nm+'</span><span class="dots">'+Array.from({length:Math.min(n,5)},()=>"<i></i>").join("")+'</span>';
     b.onclick=()=>{sel=i;renderDays();renderDay()};
     box.appendChild(b);
   });
 }
 
 function renderDay(){
-  const d=DAYS[sel],list=byDay(sel);
-  let h='<div class="dayhead"><h2>'+d.full+'</h2><span class="ar" dir="rtl" lang="ar">'+d.ar+'</span></div>';
-  if(!list.length){
-    h+='<div class="empty">No classes. Enjoy the free day.</div>';
-  }
+  const d=DAYS[sel],list=byDay(sel),other=lang==="ar"?"en":"ar";
+  let h=`<div class="dayhead"><h2>${d[lang]}</h2><span class="sub" ${other==="ar"?'dir="rtl" lang="ar"':''}>${d[other]}</span></div>`;
+  if(!list.length)h+=`<div class="empty">${L().empty}</div>`;
   list.forEach((x,i)=>{
     const c=COURSES[x.c];
     const live=sel===todayIdx&&nowMin>=m(x.s)&&nowMin<m(x.e);
-    if(i>0){
-      const g=m(x.s)-m(list[i-1].e);
-      if(g>0)h+='<div class="gap">Free · '+(g>=60?Math.floor(g/60)+"h ":"")+(g%60?g%60+"m":"")+'</div>';
-    }
-    h+='<div class="row"><div class="time">'+fmt(x.s)+'<small>'+fmt(x.e)+'</small></div>'+
-      '<article class="card c '+kind(x)+'">'+
-      '<div class="top"><span class="code">'+x.c+'</span><span class="badge">'+x.t+'</span>'+
-      '<span class="badge">'+dur(x)+'</span>'+(live?'<span class="badge now">Now</span>':'')+'</div>'+
-      '<h3 dir="rtl" lang="ar">'+c.ar+'</h3>'+
-      '<div class="info"><div>'+ico.pin+'<span>'+x.room+(x.place?' · <span dir="rtl" lang="ar">'+x.place+'</span>':'')+'</span></div></div>'+
-      (x.who?'<div class="note"><b>Professor</b><span dir="rtl" lang="ar">'+x.who+'</span></div>':'')+
-      '</article></div>';
+    if(i>0){const g=m(x.s)-m(list[i-1].e);if(g>0)h+=`<div class="gap">${L().free} · ${mins(g).trim()}</div>`}
+    h+=`<div class="row"><div class="time">${fmt(x.s)}<small>${fmt(x.e)}</small></div>
+      <article class="card c ${KIND[x.k]}">
+        <div class="top"><span class="code">${x.c}</span><span class="badge">${tn(x)}</span><span class="badge">${dur(x)}</span>${live?`<span class="badge now">${L().now}</span>`:""}</div>
+        <h3>${c[lang]}</h3>
+        <div class="info"><div>${ico}<span>${x.room[lang]}${x.place?" · "+x.place[lang]:""}</span></div></div>
+        ${x.who?`<div class="note"><b>${L().prof}</b><span>${x.who[lang]}</span></div>`:""}
+      </article></div>`;
   });
   $("dayBody").innerHTML=h;
 }
 
 function renderWeek(){
-  const PX=1.25;
-  const w=$("week");
+  const PX=1.25,w=$("week");
   w.style.setProperty("--px",PX);
   let h='<div class="hd"></div>';
-  DAYS.forEach((d,i)=>{h+='<div class="hd'+(i===todayIdx?' today':'')+'">'+d.en+'<small dir="rtl" lang="ar">'+d.ar+'</small></div>'});
-  // axis
-  h+='<div class="axis" style="--px:'+PX+'">';
-  for(let t=510;t<=960;t+=45){
-    const hh=Math.floor(t/60),mm=String(t%60).padStart(2,"0");
-    h+='<span style="top:'+((t-510)*PX)+'px">'+hh+':'+mm+'</span>';
-  }
+  DAYS.forEach((d,i)=>{
+    const other=lang==="ar"?"en":"ar";
+    h+=`<div class="hd${i===todayIdx?" today":""}">${lang==="ar"?d.ar:d.en.slice(0,3)}<small>${lang==="ar"?d.en.slice(0,3):d.ar}</small></div>`;
+  });
+  h+=`<div class="axis" style="--px:${PX}">`;
+  for(let t=510;t<=960;t+=45){h+=`<span style="top:${(t-510)*PX}px">${Math.floor(t/60)}:${String(t%60).padStart(2,"0")}</span>`}
   h+='</div>';
   DAYS.forEach((d,i)=>{
-    h+='<div class="col'+(i===todayIdx?' today':'')+'" style="--px:'+PX+'">';
+    h+=`<div class="col${i===todayIdx?" today":""}" style="--px:${PX}">`;
     byDay(i).forEach(x=>{
       const c=COURSES[x.c];
-      const top=(m(x.s)-510)*PX+1, ht=(m(x.e)-m(x.s))*PX-2;
-      h+='<div class="blk c '+kind(x)+'" style="top:'+top+'px;height:'+ht+'px" title="'+c.ar+'">'+
-        '<span class="code">'+x.c+'</span><span class="nm" dir="rtl" lang="ar">'+c.ar+'</span>'+
-        (ht>70?'<span class="ty">'+x.t+'</span>':'')+
-        (ht>100?'<span class="rm">'+x.room.split(" · ")[0]+'</span>':'')+'</div>';
+      const top=(m(x.s)-510)*PX+1,ht=(m(x.e)-m(x.s))*PX-2;
+      h+=`<div class="blk c ${KIND[x.k]}" style="top:${top}px;height:${ht}px" title="${c[lang]}">
+        <span class="code">${x.c}</span><span class="nm">${c[lang]}</span>
+        ${ht>70?`<span class="ty">${tn(x)}</span>`:""}
+        ${ht>100?`<span class="rm">${x.room[lang].split(" · ")[0]}</span>`:""}</div>`;
     });
     h+='</div>';
   });
@@ -324,32 +334,50 @@ function renderWeek(){
 }
 
 function renderLegend(){
-  $("legend").innerHTML=[["lec","Lecture","محاضرة"],["cls","Class","فصل"],["lab","Lab","معمل"]].map(([k,e,a])=>
-    '<span class="c '+k+'"><i></i>'+e+' <span dir="rtl" lang="ar">'+a+'</span></span>').join("");
+  $("legend").innerHTML=["Lecture","Class","Lab"].map(k=>`<span class="c ${KIND[k]}"><i></i>${L()[k]}</span>`).join("");
 }
 
 function renderStatus(){
   const list=byDay(todayIdx);
   const cur=list.find(x=>nowMin>=m(x.s)&&nowMin<m(x.e));
   const nxt=list.find(x=>m(x.s)>nowMin);
-  let s='Today: <b>'+DAYS[todayIdx].full+'</b>';
-  if(cur)s+=' · now <b>'+cur.c+'</b>';
-  else if(nxt)s+=' · next <b>'+nxt.c+'</b> at '+fmt(nxt.s);
-  else s+=list.length?' · done for today':' · no classes';
+  let s=`${L().today}: <b>${DAYS[todayIdx][lang]}</b>`;
+  if(cur)s+=` · ${L().nowL} <b>${cur.c}</b>`;
+  else if(nxt)s+=` · ${L().next} <b>${nxt.c}</b> ${L().at} ${fmt(nxt.s)}`;
+  else s+=" · "+(list.length?L().done:L().none);
   $("status").innerHTML=s;
 }
 
 function setView(v){
+  view=v;
   $("vDay").setAttribute("aria-pressed",v==="day");
   $("vWeek").setAttribute("aria-pressed",v==="week");
   $("dayView").hidden=v!=="day";
   $("weekView").hidden=v!=="week";
 }
+
+function setLang(l){
+  lang=l;
+  try{localStorage.setItem("tt-lang",l)}catch(e){}
+  const de=document.documentElement;
+  de.lang=l;de.dir=l==="ar"?"rtl":"ltr";
+  $("lEn").setAttribute("aria-pressed",l==="en");
+  $("lAr").setAttribute("aria-pressed",l==="ar");
+  document.title=L().title;
+  $("ttl").textContent=L().title;
+  $("m1").textContent=L().level;$("m2").textContent=L().program;$("m3").textContent=L().advisor;
+  $("vDay").textContent=L().day;$("vWeek").textContent=L().week;
+  $("hint").textContent=L().hint;
+  $("foot").textContent=L().foot;
+  renderDays();renderDay();renderWeek();renderLegend();renderStatus();
+}
+
 $("vDay").onclick=()=>setView("day");
 $("vWeek").onclick=()=>setView("week");
-
-renderDays();renderDay();renderWeek();renderLegend();renderStatus();
-setView(window.innerWidth>=760?"week":"day");
+$("lEn").onclick=()=>setLang("en");
+$("lAr").onclick=()=>setLang("ar");
+setLang(lang);
+setView(view);
 </script>
 <script>
 if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{})})}
